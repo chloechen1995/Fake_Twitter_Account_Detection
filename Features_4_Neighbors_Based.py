@@ -15,6 +15,19 @@ os.chdir('/home/tongkewu/STA160/network')
 import pandas as pd
 import tweepy
 import numpy as np
+# FIXME: Add logging to keep track of what's happening:
+#
+#   import logging as log
+#
+#   # Only messages at or above the log level are printed. The order is:
+#   #
+#   #   DEBUG < INFO < WARNING < ERROR < CRITICAL
+#   #
+#   log.basicConfig(filename = "my_log.txt", level = log.INFO)
+#
+#   # Print an info message.
+#   log.info("This is some info!")
+#
 
 #%% ---------- Set up API
 CONSUMER_KEY = 'QifrSmYAQ2mjIf8kiPoL2kI4v'
@@ -38,7 +51,7 @@ avg_nbs_fos = {}
 avg_nbs_tws = {}
 # - Followings to median neighbors’ followers
 fo_med = {}
-for user_id in all_ids.id:
+for i, user_id in enumerate(all_ids.id):
     try:
         followings = api.friends_ids(id = user_id)
     except tweepy.TweepError:
@@ -58,6 +71,11 @@ for user_id in all_ids.id:
     avg_nbs_tws[user_id] = np.mean(stat2)
     
     fo_med[user_id] = len(followings) / np.median(stat1)
+
+    # FIXME:
+    #if (i % 1000 == 0):
+    #    # Print to log
+    #    # Write to a file (CSV, etc)
 
 #%% 
 df1 = pd.DataFrame.from_dict(avg_nbs_fos, orient = 'index') 
