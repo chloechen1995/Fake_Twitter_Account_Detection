@@ -8,6 +8,7 @@ import logging as log
 import requests_cache
 requests_cache.install_cache('demo_cache')
 import time
+import sys
 
 final_data = pd.read_csv(open('final data.csv', 'rU'), 
                       encoding = 'utf-8', usecols = ['id'])
@@ -41,11 +42,16 @@ def get_all_tweets(twitter_id):
 
         pass
 
-for i, user_id in enumerate(id_list_split[1]):
+
+#15, 16, 17, 18
+input_1 = int(sys.argv[1])
+for i, user_id in enumerate(id_list_split[input_1]):
     try:
         get_all_tweets(user_id)
         if ((i+1) % 100 == 0):
             log.basicConfig(filename = "my_log.txt", level = log.INFO)
             log.info("Reaches to the goal")
-    except tweepy.TweepError as error:
-                    continue
+    except tweepy.TweepError as error:        
+        if error[0][0] == 'Rate limit exceeded':
+                time.sleep(15 * 60 + 15)
+                continue
