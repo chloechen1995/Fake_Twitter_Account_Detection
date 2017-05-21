@@ -37,13 +37,11 @@ def get_all_tweets(twitter_id):
         tweets = [tweets + [twitter_id] for tweets in outtweets]
         with open('%s_tweets.csv' % twitter_id, 'wb') as f:
             writer = csv.writer(f, encoding='utf-8')
-            writer.writerow(["id","created_at", "source", "favorite_count", "retweet_count", "tweet_text", "id"])
+            writer.writerow(["tweet_id","created_at", "source", "favorite_count", "retweet_count", "tweet_text", "user_id"])
             writer.writerows(tweets)
 
         pass
 
-
-#15, 16, 17, 18
 input_1 = int(sys.argv[1])
 for i, user_id in enumerate(id_list_split[input_1]):
     try:
