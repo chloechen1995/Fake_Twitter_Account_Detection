@@ -5,6 +5,7 @@ Created on Fri May 12 23:29:42 2017
 
 @author: Rachel
 """
+# Get Followers/Following Data
 import os
 #os.chdir('/Users/Rachel/Desktop/STA 160')
 #%%
