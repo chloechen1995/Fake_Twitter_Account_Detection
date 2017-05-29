@@ -31,8 +31,8 @@ def create_df(user_id):
     user_id = str(user_id)
     os.chdir('/Users/Chloechen/Desktop/Sample_Tweets')
     user_tweets = pd.read_csv(user_id + "_tweets_.csv")
-    #user_tweets.columns = ['Tweet_Id', 'Created_At', 'Source', 'Favorite_Count', 'Retweet_Count', 'Tweet_Text', 'User_Id']
-    special_remove = [str(tweets).decode('unicode_escape').encode('ascii','ignore') for tweets in user_tweets['Tweet_Text']] 
+    #user_tweets['Tweet_Text_Final'] = [tweets.replace('\\', '//') for tweets in user_tweets['Tweet_Text']] 
+    special_remove = [str(tweets).decode('utf-8').encode('ascii','ignore') for tweets in user_tweets['Tweet_Text']] 
     user_tweets['tweet_split'] = [tweets.lower().split() for tweets in special_remove]
     user_tweets['tweet_split'] = [filter(lambda x: not (x.startswith("@") or x.startswith("#") or x.startswith("https:") or x in stopwords.words("english") or x.startswith("rt")), tweet) for tweet in user_tweets['tweet_split']]
     user_tweets['tweet_split_string'] = [' '.join(str(x) for x in tweets) for tweets in user_tweets['tweet_split']]
@@ -63,7 +63,11 @@ def comb_2(tweet_df):
     Return: total number of tweet combinations
     """
     num_tweets = len(tweet_df['Tweet_Text'])
-    return int(factorial(num_tweets) / (factorial(2) * factorial(num_tweets - 2)))
+    if num_tweets > 1:
+        result = int(factorial(num_tweets) / (factorial(2) * factorial(num_tweets - 2)))
+    else:
+        result = 0
+    return result
 
 #%%
 def tweet_set(tweet_df):
@@ -87,5 +91,8 @@ def tweet_sim(user_id):
     user_tweets = create_df(user_id)
     char_count = cal_char(user_tweets)
     tweet_comb = tweet_set(user_tweets)
-    sim_value = tweet_comb['common_count'].sum() / (np.mean(char_count) * comb_2(user_tweets))
+    if comb_2(user_tweets) != 0:
+        sim_value = tweet_comb['common_count'].sum() / (np.mean(char_count) * comb_2(user_tweets))
+    else:
+        sim_value = 0
     return sim_value

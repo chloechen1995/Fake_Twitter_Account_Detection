@@ -13,6 +13,8 @@ Create a csv file that contains the tweet analysis results
 #%%
 import os
 import pandas as pd
+os.chdir("/Users/Chloechen/Desktop/tweet_analysis")
+#%%
 import t_analysis as ta
 import similarity_1 as sim_1
 import similarity_2 as sim_2
@@ -24,7 +26,17 @@ sample_data_id = pd.read_csv(open("/Users/Chloechen/Desktop/tweet_analysis/sampl
 sample_id = sample_data_id['id'].tolist()
 
 #%%
-sample_tweet_analysis = pd.DataFrame(sample_id, columns = ["twitter_id"])
+os.chdir('/Users/Chloechen/Desktop/Sample_Tweets')
+
+sample_id_exist = []
+for s_id in sample_id:
+    if os.path.exists(str(s_id) + "_tweets_.csv"):
+        sample_id_exist.append(s_id)
+
+#%%
+sample_tweet_analysis = pd.DataFrame(sample_id_exist, columns = ["twitter_id"])
+#%%
+sample_tweet_analysis['similarity_ratio_1'] = sample_tweet_analysis["twitter_id"].apply(sim_1.tweet_sim)
 
 #%%
 sample_tweet_analysis['url_rtio'] = sample_tweet_analysis["twitter_id"].apply(ta.url_ratio)

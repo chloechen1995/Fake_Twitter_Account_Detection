@@ -6,15 +6,17 @@ Created on Wed May 24 00:28:34 2017
 @author: Chloechen
 """
 
+#%%
+from __future__ import division
 """
-analyze tweet‘s authenticity using url_ratio, url_unique_ratio, hashtag_ratio, username_ratio and username_unique_ratio
+verify tweet‘s authenticity using url_ratio, url_unique_ratio, hashtag_ratio, username_ratio and username_unique_ratio
 """
 
-from __future__ import division
 import pandas as pd
 from compiler.ast import flatten
 import re
 
+#%%
 def url_ratio(user_id):
     """
     calculate the percentage of 20 recent Tweets containing URLs
@@ -29,6 +31,7 @@ def url_ratio(user_id):
     return tweets_url_ratio
 
 
+#%%
 def url_unique_ratio(user_id):
     """
     calculate the ratio of the number of unique URLs in the 20 recent tweets
@@ -40,7 +43,7 @@ def url_unique_ratio(user_id):
     user_tweets = pd.read_csv(str(user_id) + "_tweets_.csv")
     top_20 = user_tweets[:20]
     # find all the urls using regular expression
-    urls = [re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweets) for tweets in top_20['Tweet_Text']]
+    urls = [re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', str(tweets)) for tweets in top_20['Tweet_Text']]
     # flatten a list of lists
     urls_flatten = flatten(urls)
     # get the first two parts of the url
@@ -52,6 +55,7 @@ def url_unique_ratio(user_id):
     url_ratio = url_unique/tweet_total
     return url_ratio
 
+#%%
 def hashtag_ratio(user_id):
     """
     calculate the hashtag ratio
@@ -64,7 +68,8 @@ def hashtag_ratio(user_id):
     top_20 = user_tweets[:20]
     hashtag_ratio = sum(top_20['Tweet_Text'].str.contains("#"))/len(top_20['Tweet_Text'])
     return hashtag_ratio
-    
+
+#%%
 def username_ratio(user_id):
     """
     calculate the username ratio
@@ -78,6 +83,7 @@ def username_ratio(user_id):
     username_ratio = sum(top_20['Tweet_Text'].str.contains("@"))/len(top_20['Tweet_Text'])
     return username_ratio
     
+#%%
 def username_unique_ratio(user_id):
     """
     calculate the ratio of the number of unique @usernames
@@ -88,7 +94,7 @@ def username_unique_ratio(user_id):
     """
     user_tweets = pd.read_csv(str(user_id) + "_tweets_.csv")
     top_20 = user_tweets[:20]
-    username = [re.findall('@([A-Za-z0-9_]+)', tweets) for tweets in top_20['Tweet_Text']]
+    username = [re.findall('@([A-Za-z0-9_]+)', str(tweets)) for tweets in top_20['Tweet_Text']]
     # flatten a list of lists
     username_flatten = flatten(username)
     username_unique = set(username_flatten)
