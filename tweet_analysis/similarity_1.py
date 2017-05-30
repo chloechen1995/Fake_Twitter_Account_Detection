@@ -18,9 +18,9 @@ from math import factorial
 import numpy as np
 import os 
 
-
+os.chdir('/Users/Chloechen/Desktop/Sample_Tweets')
 #%%
-def create_df(user_id):
+def create_df(user_tweets):
     """
     remove unnecessary words from the user_tweets.csv
     
@@ -28,10 +28,8 @@ def create_df(user_id):
     
     Return: user_tweets dataframe
     """
-    user_id = str(user_id)
-    os.chdir('/Users/Chloechen/Desktop/Sample_Tweets')
-    user_tweets = pd.read_csv(user_id + "_tweets_.csv")
-    #user_tweets['Tweet_Text_Final'] = [tweets.replace('\\', '//') for tweets in user_tweets['Tweet_Text']] 
+    #user_id = str(user_id)
+    #user_tweets = pd.read_csv(user_id + "_tweets_.csv")
     special_remove = [str(tweets).decode('utf-8').encode('ascii','ignore') for tweets in user_tweets['Tweet_Text']] 
     user_tweets['tweet_split'] = [tweets.lower().split() for tweets in special_remove]
     user_tweets['tweet_split'] = [filter(lambda x: not (x.startswith("@") or x.startswith("#") or x.startswith("https:") or x in stopwords.words("english") or x.startswith("rt")), tweet) for tweet in user_tweets['tweet_split']]
@@ -87,12 +85,15 @@ def tweet_set(tweet_df):
     return tweet_df
 
 #%%
-def tweet_sim(user_id):
-    user_tweets = create_df(user_id)
-    char_count = cal_char(user_tweets)
-    tweet_comb = tweet_set(user_tweets)
-    if comb_2(user_tweets) != 0:
-        sim_value = tweet_comb['common_count'].sum() / (np.mean(char_count) * comb_2(user_tweets))
+def tweet_sim(user_tweets):
+    if len(user_tweets) != 0: 
+	    user_tweets = create_df(user_tweets)
+	    char_count = cal_char(user_tweets)
+	    tweet_comb = tweet_set(user_tweets)
+	    if comb_2(user_tweets) != 0:
+	        sim_value = tweet_comb['common_count'].sum() / (np.mean(char_count) * comb_2(user_tweets))
+	    else:
+	        sim_value = 0
     else:
-        sim_value = 0
+        sim_value = "None"
     return sim_value
