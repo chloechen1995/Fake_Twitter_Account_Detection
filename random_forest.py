@@ -12,6 +12,9 @@ import os
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 import numpy as np
+from sklearn.cross_validation import train_test_split
+from sklearn.cross_validation import cross_val_score
+from sklearn.model_selection import cross_val_predict
 #%%
 os.chdir("/Users/Chloechen/Desktop/tweet_analysis")
 user_features = pd.read_csv("sample_feature_guanyu.csv")
@@ -48,34 +51,41 @@ final_df[['tweet_rate', 'mobile_ratio', 'website_ratio', 'third_ratio', 'other_r
 cols = list(final_df.columns.values)
 cols.pop(cols.index('label'))
 final_df = final_df[cols+ ['label']]
-#%%
-features = final_df.columns[1:-1]
 
 #%%
-# create training and test data
-final_df['is_train'] = np.random.uniform(0, 1, len(final_df)) <= .80
+features_df = final_df[final_df.columns[1:-1]]
 
 #%%
-train, test = final_df[final_df['is_train']==True], final_df[final_df['is_train']==False]     
-y = pd.factorize(train['label'])[0]
-#%%
-# Create a random forest classifiers
-clf = RandomForestClassifier(n_jobs=2)
+X = features_df.as_matrix()
+# convert each label into digits
 
-clf.fit(train[features], y)
+y = pd.factorize(final_df['label'])[0]
 
-#%%
-# Apply classifier we trained to the test data
-clf.predict(test[features])
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3)
 
 #%%
-# Evaluate Classifier
-preds = final_df.label[clf.predict(test[features])]
+# Train the random forest classifier
+clf = RandomForestClassifier(n_jobs = 2)
+clf.fit(X_train, y_train)
 
 #%%
-# A list of features and their importance scores
-feature_list = list(zip(train[features], clf.feature_importances_))
+clf.predict(X_test)
+
+#%%
+X_train_df = pd.DataFrame(X_train, columns = [features_df.columns])
+feature_list = list(zip(X_train_df, clf.feature_importances_))
+
 feature_df = pd.DataFrame(feature_list, columns = ["Features", "Feature_importance"])
 
 #%%
+# This displays the importance of different features
 feature_df.sort(['Feature_importance'], ascending = False)
+
+#%%
+# 10-Fold Cross Validation -- we randomly particioned the training data into 10 equal size subsamples
+
+print np.mean(cross_val_score(clf, X_train, y_train, cv = 10))
+
+#%%
+#predicted = cross_val_predict(clf, X_test, y_test, cv = 10)
+#metrics.accuracy_score(y_test, X_test)
