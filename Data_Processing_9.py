@@ -8,7 +8,7 @@ Created on Tue May 23 21:03:53 2017
 #%%
 
 ########## Subset Sample Data
-# The sample data is consisted of 2900 genuine accounts and 250 fake/spam accounts.
+# The sample data is consisted of 2900 genuine accounts and 350 fake/spam accounts.
 # In this case, we try to be close to the proportion of fake/spam accounts in real situation.
 
 import os
