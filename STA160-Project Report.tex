@@ -1,0 +1,78 @@
+\documentclass[a4paper, twoside, 12pt]{report}
+\usepackage[colorlinks=false,
+allbordercolors={0 0 0},
+pdfborderstyle={/S/U/W 1}]{hyperref}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\usepackage[margin= 1 in]{geometry}
+
+\begin{document}
+\title{STA160 Project Report - Fake Twitter Account Detection}
+\maketitle
+\author{By: Tongke Wu, Guanyu Chen, Jieyi Chen}
+
+\section{Abstract}
+%\\
+As one of the most influential social networks in the world, Twitter is not only the showcase of people's daily life but also the channel of news and public opinions. The individuals can rise to fame through their tweets' popularity while the entities could encounter major crisis if their scandals are tweeted. Meanwhile, people have used fake accounts to produce tweets and comments to inflate the popularity of certain users and particular topics. Therefore, it is crucial to develop a model to discover the current fake Twitter accounts so that the public is aware of their influences.\\
+
+\noindent In this paper, we create 45 features to analyze each Twitter account and apply these information to develop random forest, logistic regression and support vector machine models to discriminate between genuine and fake accounts.
+
+\section{Introduction}
+According to a study done by the University of Southern California and Indiana University, there are approximately 9 - 15\% Twitter active monthly users are bots, which is around 28.9 million to 47.9 million potential fake users[1] . Therefore, the twitter users will be the major beneficiary of our project results because they want a tool to help them identify whether the account is fake. 
+
+\section{Source}
+First, we got Twitter accounts dataset from \href{http://mib.projects.iit.cnr.it/dataset.html}{My Information Bubble}. Then, we used the labeled accounts provided by this website to get user profile, tweet and follower information from the Twitter API. Some limitations that we encountered was the Twitter API's rate limits, in which we can only make 1 requests per 15 minute periods. In addition, we can only retrieve a maximum of 3,200 possible tweets for one user.
+
+\section{Features}
+\subsection{Profile-based Feature}
+* Number of followers\\
+\noindent* Number of tweets\\
+\noindent* Fo-fo ratio: the ratio of the number of an account's following to its followers\\
+\noindent* Age of the user account [2]\\
+\noindent* Reputaion score\\
+\noindent* Following choice: $F=\frac{T_n}{D_n}$ where $T_n$ is the total number of names among the account's followings and $D_n$ is the number of distinct first names. This ratio attempts to detect whether an account likely used a list of names to pick its folloings or not.[4]
+
+
+\subsection{Content-based Feature}
+\subsubsection{Tweet Ratio Analysis}
+We applied the Twitter Spam classification techniques used in Uncovering Social Spammers: Social Honeypots + Machine Learning study[3] to build different ratios to classify the account.
+
+* The percentage of URLs in the recent 20 tweets
+\[\abs{url\_ratio} = \dfrac{\abs{URLs}}{\abs{20 \; Recent \;Tweets}}\]
+
+* The percentage of unique URLs in the recent 20 tweets
+\[\abs{url\_unique\_ratio} = \dfrac{\abs{unique\_URLs}}{\abs{20 \; Recent \;Tweets}}\]
+
+* The percentage of hashtags in the recent 20 tweets
+\[\abs{hashtag\_ratio} = \dfrac{\abs{hashtag}}{\abs{20 \; Recent \;Tweets}}\]
+
+* The percentage of usernames in the recent 20 tweets
+\[\abs{username\_ratio} = \dfrac{\abs{username}}{\abs{20 \; Recent \;Tweets}}\]
+
+
+* The percentage of unique usernames in the recent 20 tweets
+\[\abs{username\_unique\_ratio} = \dfrac{\abs{unique\_username}}{\abs{20 \; Recent \;Tweets}}\]
+
+\subsubsection{Tweet Similarity Analysis}
+
+* Tweet similarity: (1) $S=\frac{\sum_{p\in P}c(p)}{l_al_p}$ where $P$ is the set of possible tweet-to-tweet combinations among any two tweets logged for a certain account, $p$ is a single pair, $c(p)$ is a function calculation the number of words two tweets shere, $l_a$ is the average length of tweets posted by that user, and $l_p$ is the number of tweet combinations. [6]\\
+
+\noindent * $\sum_{a,b \in set of pairs in tweets}\frac{similarity(a,b)}{|set of pairs in tweets|}$ where the content similarity is computed using the standard cosine simility over the bag-of-word vector representation $\mathbf{V(a)}$ of the tweet contet: $similarity(a,b)=\frac{\mathbf{V(a)}\mathbf{V(b)}}{|\mathbf{V(a)}||\mathbf{V(b)}|}$ Since tweets are extremely short (140 characters or less), we consider a bag-of-words model and a sparse bigrams model. [3]
+
+\subsection{Graph-based Feature}
+
+If we view each Twitter account $i$ as a node and each follow relationship as a directed edge $e$, then we can view the whole Twittersphere as a directed graph $G = (V, E)$. Even though the spammers can change their tweeting or following behavior, it will be difficult for them to change their positions in this graph. [5]\\
+
+\noindent$indegree\ d_I(v_i)$ of a node $v_i$: the number of nodes that are adjacent to node $v_i$ stands for the number of followers
+$outdegree\ d_O(v_i)$ of a node $v_i$: the number of nodes that are adjacent to $v_i$ stands for the number of friends
+reputation: $R(v_i)=\frac{d_I(v_i)}{d_I(v_i)+d_O(v_i)}$
+
+\section{Reference}
+[1]O.Varol, E.Ferrara, C.A.Davis, F.Menczer, and A.Flammini. Online Human-Bot Interactions: Detection, Estimation, and Characterization
+[2] F. Benevenuto, G. Magno, T. Rodrigues, and V. Almeida. Detecting Spammers on Twitter. In Collaboration, Electronic messaging, Anti-Abuse and Spam Confference.
+[3] K. Lee, J. Caverlee, and S. Webb. Uncovering Social Spammers: Social Honeypots Machine Learning. In ACM SIGIR Conference (SIGIR), 2010.
+[4] G. Stringhini, S. Barbara, C. Kruegel, and G. Vigna. Detecting Spammers On Social Networks. In Annual Computer Security Applications Conference (ACSAC’10), 2010.
+[5] A. Wang. Don’t follow me: spam detecting in Twitter. In Int’l Conferene on Security and Cryptography (SECRYPT), 2010.
+[6] G. Stringhini, C. Kruegel, G. Vigna Detecting Spammers on Social Networks
+[7] C. Yang, R. Harkreader, and G. Gu. Empirical evaluation and new design for fighting evolving Twitter spammers. I.
+\end{document}
