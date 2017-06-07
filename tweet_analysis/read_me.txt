@@ -7,3 +7,4 @@ similarity_1.py -- calculate tweet similarity
 similarity_2.py -- calculate tweet similarity using bag-of-word vector representation
 t_analysis.py -- verify tweet‘s authenticity using url_ratio, url_unique_ratio, hashtag_ratio, username_ratio and username_unique_ratio
 tweet_left.py -- get tweets for the leftover twitter_ids from API
+tweet_time.py -- calculate the time difference between two consecutive tweets
