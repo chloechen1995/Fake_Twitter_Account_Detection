@@ -21,8 +21,9 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import itertools
+import seaborn as sns
 #%%
-os.chdir("/Users/Chloechen/Desktop/tweet_analysis")
+os.chdir("/Users/Chloechen/Desktop/tweet_analysis/data")
 user_features = pd.read_csv("sample_feature_guanyu.csv")
 user_features['id'] = user_features['id'].astype(int)
 user_features = user_features.drop('Unnamed: 0', 1)
@@ -38,14 +39,18 @@ similarity_ratio_1['id'] = similarity_ratio_1['id'].astype(int)
 similarity_ratio_2 = pd.read_csv("similarity_ratio_2.csv")
 similarity_ratio_2 = similarity_ratio_2.drop('Unnamed: 0', 1)
 similarity_ratio_2['id'] = similarity_ratio_2['id'].astype(int)
-
+#%%
+tweet_time = pd.read_csv("tweet_time_dff.csv")
+tweet_time = tweet_time.drop(tweet_time.columns[[0, 1]], 1)
+tweet_time['id'] = tweet_time['id'].astype(int)
+#%%
 user_tweets = t_analysis_ratio.merge(similarity_ratio_1, on = 'id').merge(similarity_ratio_2, on = 'id')
 
-final_df = user_features.merge(network_features, on = 'id').merge(user_tweets, on = 'id')
+final_df = user_features.merge(network_features, on = 'id').merge(user_tweets, on = 'id').merge(tweet_time, on = 'id')
 
 final_df['no_tweet'] = np.where(final_df['similarity_ratio_1'] == "None", 1, 0)
 #%%
-final_df = final_df.replace([np.inf, -np.inf], np.nan)
+final_df = final_df.replace([np.inf, -np.inf], 1000000)
 final_df = final_df.replace({'No tweets': -1}, regex = True)
 final_df = final_df.replace({'None': -1}, regex = True)
 final_df = final_df.fillna(-1)
@@ -57,77 +62,64 @@ cols = list(final_df.columns.values)
 cols.pop(cols.index('label'))
 final_df = final_df[cols+ ['label']]
 final_df['label_model'] = np.where(final_df['label'] == 'genuine', 'Genuine', 'Fake')
+
+#%%
+#os.chdir("/Users/Chloechen/Desktop/tweet_analysis/data")
+#final_df.to_csv("final_df_sample.csv", sep = ",")
 #%%
 features_df = final_df[final_df.columns[1:-2]]
 
 #%%
 ### Build Random Forest Classifier Model
 X = features_df.as_matrix()
-y_df = pd.DataFrame(final_df.label)
+y_df = pd.DataFrame(final_df.label_model)
 y_m = y_df.as_matrix()
-y = pd.factorize(final_df['label'])[0]
+y = pd.factorize(final_df['label_model'])[0]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0)
 
 #%%
 # Train the random forest classifier
-clf = RandomForestClassifier(n_jobs = 2, n_estimators = 100)
-clf.fit(X_train, y_train)
+clf = RandomForestClassifier()
 
 #%%
-clf.predict(X_test)
+# tuned parameters: number of trees, depth of the trees, number of features used for splitting, the minimum size of the parent node and the minimum size of the leaf node in a tree
+tuned_parameters = {'n_estimators': [10, 50, 100, 150, 200], 'max_features': ['auto', 'log2'], 'n_jobs': [-1, 1, 2], 'criterion': ["gini", "entropy"]}
+clf_grid = GridSearchCV(estimator=clf, param_grid=tuned_parameters, cv = 5, n_jobs = -1)
+#%%
+clf_grid.fit(X_train, y_train)
 
+#%%
+print "The best parameters are %s" %clf_grid.best_params_
+
+#%%
+clf_best = RandomForestClassifier(max_features = 'log2', n_estimators = 100, n_jobs = 1, criterion = 'entropy', class_weight = {0:0.1, 1:0.9})
+#%%
+clf_best.fit(X_train, y_train)
 #%%
 # Find the feature importance score
 X_train_df = pd.DataFrame(X_train, columns = [features_df.columns])
-feature_list = list(zip(X_train_df, clf.feature_importances_))
+feature_list = list(zip(X_train_df, clf_best.feature_importances_))
 
 feature_df = pd.DataFrame(feature_list, columns = ["Features", "Feature_importance"])
 
-feature_df.sort(['Feature_importance'], ascending = False)
-
+feature_df = feature_df.sort(['Feature_importance'], ascending = False)
+#%%
+feature_df.round(3)
+#%%
+ax = sns.barplot(x = "Feature_importance", y = "Features", data = feature_df)
+ax.set_xlabel("Feature_Importance")
 #%%
 # 10-Fold Cross Validation -- we randomly particioned the training data into 10 equal size subsamples
 
-scores = cross_val_score(clf, X, y, cv = 10)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+scores = cross_val_score(clf_best, X, y, cv = 10)
 #%%
 #Obtaining predictions by cross-validation
-predicted = cross_val_predict(clf, X, y, cv = 10)
-metrics.accuracy_score(y, predicted)
+predicted = cross_val_predict(clf_best, X, y, cv = 10)
+mac = metrics.accuracy_score(y, predicted)
+scores_dict = {"Cross_Validation_Score_Mean": scores.mean(), "Cross_Validation_Score_Sd": scores.std(), "Metrics_Accuracy_Score": mac}
 
 #%%
-
-# Since we find that some features do not contribute in predicting the label of an account, we will eliminate those from our model
-new_feature = feature_df[feature_df['Feature_importance'] > 0]
-
-#%%
-new_feature_df = features_df[new_feature['Features']]
-
-#%%
-X_new = new_feature_df.as_matrix()
-y_df = pd.DataFrame(final_df.label)
-y_m = y_df.as_matrix()
-y = pd.factorize(final_df['label'])[0]
-X_train_new, X_test_new, y_train_new, y_test_new = train_test_split(X_new, y, test_size = 0.3, random_state = 0)
-
-#%%
-# Train the random forest classifier
-clf_new = RandomForestClassifier(n_jobs = 2, n_estimators = 100)
-clf_new.fit(X_train_new, y_train_new)
-
-#%%
-clf_new.predict(X_test_new)
-
-#%%
-# 10-Fold Cross Validation -- we randomly particioned the training data into 10 equal size subsamples
-
-scores_new = cross_val_score(clf_new, X_new, y, cv = 10)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores_new.mean(), scores_new.std() * 2))
-#%%
-#Obtaining predictions by cross-validation
-predicted_new = cross_val_predict(clf_new, X_new, y, cv = 10)
-metrics.accuracy_score(y, predicted_new)
-
+scores_dict
 #%%
 def plot_confusion_matrix(cm, classes,
                           normalize=False,
@@ -156,14 +148,14 @@ def plot_confusion_matrix(cm, classes,
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, cm[i, j],
                  horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+                 color="orange" if cm[i, j] > thresh else "black")
 
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
 #%%
-y_pred = clf.predict(X)
+y_pred = clf_best.predict(X)
 cnf_matrix = confusion_matrix(y, y_pred)
 np.set_printoptions(precision = 2)
 
@@ -175,18 +167,6 @@ plt.figure()
 plot_confusion_matrix(cnf_matrix, class_names)
 
 #%%
-# How to make the plot look better?
 plt.figure()
 plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
                       title='Normalized confusion matrix')
-#%%
-# tuned parameters: number of trees, depth of the trees, number of features used for splitting, the minimum size of the parent node and the minimum size of the leaf node in a tree
-tuned_parameters = {'n_estimators': [10, 50, 100, 150], 'max_features': ['auto', 'log2']}
-clf_grid = GridSearchCV(estimator=clf, param_grid=tuned_parameters, cv = 5)
-#%%
-clf_grid.fit(X, y)
-#%%
-print clf_grid.best_params_
-
-#%%
-sorted(clf_grid.cv_results_.keys())
