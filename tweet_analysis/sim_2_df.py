@@ -6,7 +6,7 @@ Created on Tue May 30 07:20:36 2017
 @author: Chloechen
 """
 
-### This scirpt creates a dataframe for storing the tweet similarity ratio 2 result
+### This scirpt creates a csv file for storing the tweet similarity ratio 2 result
 #%%
 import pandas as pd
 import similarity_2 as sim_2
