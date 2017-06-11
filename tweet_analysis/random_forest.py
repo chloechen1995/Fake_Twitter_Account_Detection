@@ -34,6 +34,7 @@ def random_forest(dataset):
     features_df = final_df[final_df.columns[1:-2]]
     X = features_df.as_matrix()
     y = pd.factorize(final_df['label_model'])[0]
+    y_df = pd.DataFrame(final_df.label_model)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0)
     clf = RandomForestClassifier(oob_score = True, n_jobs = -1)
     param_dist = {'max_features': ['auto', 'log2'],
@@ -52,14 +53,14 @@ def random_forest(dataset):
     clf_best = ran_search.best_estimator_
     clf_best.fit(X_train, y_train)
     predicted = cross_val_predict(clf_best, X_train, y_train, cv = 5)
-    ### Why??
+    y_pred = clf_best.predict(X_test)
     mac = metrics.accuracy_score(y_train, predicted)
     X_train_df = pd.DataFrame(X_train, columns = [features_df.columns])
     feature_list = list(zip(X_train_df, clf_best.feature_importances_))
     feature_df = pd.DataFrame(feature_list, columns = ["Features", "Feature_importance"])
     feature_df = feature_df.sort_values(['Feature_importance'], ascending = False)
     feature_df = feature_df.round(3)
-    return mac, ran_search, feature_df
+    return y_df, y_test, y_pred, mac, ran_search, feature_df
 
 #%%
 def report(ran_search, n_top=3):
@@ -91,7 +92,7 @@ def plot_features(dataset):
     
     Return: feature importance barplot
     """
-    ran_search, feature_df = random_forest(dataset)
+    y_df, y_test, y_pred, mac, ran_search, feature_df = random_forest(dataset)
     ax = sns.barplot(x = "Feature_importance", y = "Features", data = feature_df)
     sns.plt.suptitle('Feature Importance Barplot for Sample Dataset_' + str(dataset))
     ax.set_xlabel("Feature_Importance")
@@ -133,7 +134,7 @@ def plot_confusion_matrix(cm, classes,
     plt.xlabel('Predicted label')
 
 #%%
-def create_confusion_matrix(dataset):
+def create_confusion_matrix(y_test, y_pred, y_df, dataset):
     """
     create regular and normalized confusion matrix
     
@@ -141,15 +142,8 @@ def create_confusion_matrix(dataset):
     
     Return: regular and normalized confusion matrix
     """
-    ran_search, feature_df = random_forest(dataset)
-    final_df = pd.read_csv("final_df_sample_" + str(dataset) +".csv")
-    features_df = final_df[final_df.columns[1:-2]]
-    X = features_df.as_matrix()
-    y_df = pd.DataFrame(final_df.label_model)
-    y = pd.factorize(final_df['label_model'])[0]
-    clf_best = ran_search.best_estimator_
-    y_pred = clf_best.predict(X)
-    cnf_matrix = confusion_matrix(y, y_pred)
+
+    cnf_matrix = confusion_matrix(y_test, y_pred)
     np.set_printoptions(precision = 2)
     class_names = np.unique(y_df)
     plt.figure()
@@ -160,14 +154,19 @@ def create_confusion_matrix(dataset):
 
 #%%
 # dataset = the number in the final_df name
-mac, ran_search, feature_df = random_forest(1)
+dataset = 1
+#%%
+y_df, y_test, y_pred, mac, ran_search, feature_df = random_forest(dataset)
+
+#%%
+# print out the accuracy score
 mac
 #%%
 report(ran_search, n_top=3)
 
 #%%
-plot_features(1)
+plot_features(dataset)
 
 #%%
-create_confusion_matrix(1)
+create_confusion_matrix(y_test, y_pred, y_df, dataset)
 
