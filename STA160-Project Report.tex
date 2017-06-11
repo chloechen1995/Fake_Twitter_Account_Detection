@@ -125,11 +125,11 @@ We applied 47 features on the randomly selected twitter accounts. Then, we use t
 	\begin{tabular}{l*{4}{c}r}
 		Parameters     & Sample\_Data\_1 & Sample\_Data\_2 & Sample\_Data\_3 & Sample\_Data\_4 \\
 		\hline
-		max\_features & log2 & auto & auto & auto  \\
-		n\_estimators & 115 & 49 & 50 & 167  \\
-		min\_samples\_leaf & 53 & 50 & 57 & 51  \\
-		criterion & entropy & entropy & entropy & entropy  \\
-		random\_state & 17 & 4 & 7 & 3  \\
+		max\_features & log2 & log2 & log2 & log2  \\
+		n\_estimators & 126 & 103 & 180 & 195  \\
+		min\_samples\_leaf & 69 & 50 & 69 & 52  \\
+		criterion & entropy & gini & gini & gini  \\
+		random\_state & 1 & 12 & 15 & 10  \\
 		class\_weight & {0:10} & {0:10} & {0:10} & {0:10}  \\
 		
 	\end{tabular}
@@ -148,13 +148,13 @@ We applied 47 features on the randomly selected twitter accounts. Then, we use t
 		& Metrics\_Accuracy
 		Score\\
 		\hline
-		Sample\_Data\_1 & 0.952    &0.012 & 0.952\\
+		Sample\_Data\_1 & 0.942    &0.014 & 0.942\\
 		\hline
-		Sample\_Data\_2 & 0.962    &0.009 & 0.96\\
+		Sample\_Data\_2 & 0.961    &0.008 & 0.961\\
 		\hline
-		Sample\_Data\_3 & 0.975    &0.010 & 0.978\\
+		Sample\_Data\_3 & 0.964    &0.009 & 0.964\\
 		\hline
-		Sample\_Data\_4 & 0.917    &0.016 & 0.901\\
+		Sample\_Data\_4 & 0.913    &0.014 & 0.913\\
 		\hline
 	\end{tabular}
 	\caption{Cross Validation and Accuracy Score}
@@ -163,7 +163,7 @@ We applied 47 features on the randomly selected twitter accounts. Then, we use t
 
 \noindent When tuning the parameters, we conducted 5-fold cross validation, in which allows us to randomly partition the training data into 5 equal size subsamples and evaluate the random forest model. In addition, we also find the accuracy score, in which calculates the probability that the predicted labels match with the true labels. From table 3, we can see that the cross validation scores for Sample Datasets\_1 to 3 are ranged from 0.95 and 0.98. However, the score for Sample\_Datasets\_4 is much lower than the rest. We believe the distribution of fake and genuine accounts in these datasets contribute to the difference in scores. For the first three sample datasets, we mimic the true distribution in reality, in which 10\% of them are fake and 90\% are genuine. But the ratios of sample dataset\_4 is 3:1. \\
 
-\noindent After finding the best parameters, we fit the model on the training datasets and use barplots to illustrate the importance of each feature ratio in predicting the correct twitter account label. Figure 1 shows the total number of favorites that a particular user gets is the most effective predictor because this feature is based on how the third party (other twitter users) respond to the content that this particular user has produced.\\
+\noindent After finding the best parameters, we used them to fit the model on the training datasets and illustrated the importance of each feature ratio in predicting the correct twitter account label with barplot. Figure 1 shows the total number of favorites that a particular user gets is the most effective predictor for sample dataset (1~3) because this feature is based on how the third party (other twitter users) responds to the content that this particular user has produced. However, if 30\% of our sample dataset are fake accounts, the website ratio has the highest predictive power because high percentage score is a good indicator of fake account.  \\
 
 \begin{figure}[H]
 	\centering
@@ -172,9 +172,14 @@ We applied 47 features on the randomly selected twitter accounts. Then, we use t
 	\label{fig:mesh1}
 \end{figure}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.7]{feature_4}
+	\caption{Feature Importance}
+	\label{fig:mesh1}
+\end{figure}
 
-
-\noindent Lastly, we used confusion matrix to check the accuracy of the random forest model. In order to better visualize and interpret the results, we used the normalized confusion matrix so that the ratio is at the same scale. Figure 2 shows that fake accounts have higher prediction accuracy score, in which indicates that the model did a better job in predicting fake accounts than genuine accounts for sample dataset 1. 
+\noindent Lastly, we used confusion matrix to check the accuracy of the random forest model. In order to better visualize and interpret the results, we used the normalized confusion matrix to make sure the ratio is at the same scale. Figure 2 and 3 show that fake accounts have higher prediction accuracy score in general, which indicates that the model did a better job in predicting fake accounts than genuine accounts. However, we also noticed that this model has a significantly higher error rate when the ratio for genuine and fake accounts is 3:1 in the dataset. 
 
 \begin{figure}[H]
 	\centering
@@ -187,6 +192,23 @@ We applied 47 features on the randomly selected twitter accounts. Then, we use t
 	\begin{subfigure}{.5\textwidth}
 		\centering
 		\includegraphics[scale=0.6]{matrix_nor_1}
+		\caption{With Normalization}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{Confusion Matrix}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[scale=0.6]{matrix_4}
+		\caption{Without Normalization}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[scale=0.6]{matrix_nor_4}
 		\caption{With Normalization}
 		\label{fig:sub2}
 	\end{subfigure}
