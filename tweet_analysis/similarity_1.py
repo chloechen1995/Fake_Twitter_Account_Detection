@@ -7,7 +7,7 @@ Created on Wed May 24 00:48:27 2017
 """
 
 """
-calculate tweet similarity
+This script calculates tweet similarity ratio 1
 """
 
 #%%
@@ -16,20 +16,16 @@ from nltk.corpus import stopwords
 import itertools as it
 from math import factorial
 import numpy as np
-import os 
 
-os.chdir('/Users/Chloechen/Desktop/Sample_Tweets')
 #%%
 def create_df(user_tweets):
     """
     remove unnecessary words from the user_tweets.csv
     
-    Argument: user_id
+    Argument: user_tweets
     
     Return: user_tweets dataframe
     """
-    #user_id = str(user_id)
-    #user_tweets = pd.read_csv(user_id + "_tweets_.csv")
     special_remove = [str(tweets).decode('utf-8').encode('ascii','ignore') for tweets in user_tweets['Tweet_Text']] 
     user_tweets['tweet_split'] = [tweets.lower().split() for tweets in special_remove]
     user_tweets['tweet_split'] = [filter(lambda x: not (x.startswith("@") or x.startswith("#") or x.startswith("https:") or x in stopwords.words("english") or x.startswith("rt")), tweet) for tweet in user_tweets['tweet_split']]
