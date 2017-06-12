@@ -1,1 +1,1 @@
-# Fake-Twitter-Accounts-Detection-Repository
+# Fake Twitter Accounts Detection Repository
