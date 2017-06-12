@@ -1,1 +1,1 @@
-# Fake-Twitter-Accounts-and-Followers-Detection
+# Fake-Twitter-Accounts-Detection-Repository
